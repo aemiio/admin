@@ -1,0 +1,787 @@
+#include <iostream.h>
+#include <iomanip.h>
+#include <conio.h>
+#include <dos.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fstream.h>
+
+// max
+
+const int max_length = 100;
+struct WordEntry
+{
+    char word[max_length];
+    char definition[max_length];
+    char category[max_length];
+    char changedWord[max_length];
+    char acronym[max_length];
+    int approved;
+};
+const int max_words = 100;
+WordEntry entries[max_words]; // Now using the struct
+int wordCount = 0;
+
+// accounts
+struct UserAccount
+{
+    char username[max_length];
+    char password[max_length];
+    int isAdmin; // Using int instead of bool
+    int banned;
+};
+const int max_users = 20;
+UserAccount users[max_users]; // Array of UserAccount structs
+int userCount = 0;
+
+// functions
+void loadDatabase();
+void saveDatabase();
+void loadUsers();
+void saveUsers();
+void mainMenu();
+void adminMenu();
+void userMenu();
+void adminLogin();
+void userLogin();
+void registerUser();
+void addAndEdit();
+int categorize();
+void approval();
+void feedback();
+void manageUsers();
+void backup();
+void restore();
+
+// global variables
+int choice = 0, i = 0;
+
+// main
+void main()
+{
+    clrscr();
+    restore();
+    mainMenu();
+    getch();
+}
+
+// files complete
+void loadDatabase()
+{
+    ifstream inFile("DATABASE.TXT");
+    if (!inFile)
+    {
+        cout << "Unable to open file for reading.\n";
+        return;
+    }
+    wordCount = 0;
+    char line[max_length];
+    while (inFile.getline(line, max_length) && !inFile.eof())
+    {
+        char *token = strtok(line, ":"); // Tokenize the line by colon
+        strcpy(entries[wordCount].word, token);
+
+        token = strtok(NULL, ":");
+        strcpy(entries[wordCount].definition, token);
+
+        token = strtok(NULL, ":");
+        strcpy(entries[wordCount].changedWord, token);
+
+        token = strtok(NULL, ":");
+        strcpy(entries[wordCount].acronym, token);
+
+        token = strtok(NULL, ":");
+        entries[wordCount].approved = atoi(token);
+        wordCount++;
+    }
+
+    inFile.close();
+}
+
+void saveDatabase()
+{
+    ofstream outFile("DATABASE.TXT");
+    if (!outFile)
+    {
+        cout << "Unable to open file for writing.\n";
+        return;
+    }
+
+    for (int i = 0; i < wordCount; i++)
+    {
+        outFile << entries[i].word << ":"
+                << entries[i].definition << ":"
+                << entries[i].changedWord << ":"
+                << entries[i].acronym << ":"
+                << entries[i].approved << "\n";
+    }
+
+    outFile.close();
+}
+void loadUsers()
+{
+    ifstream loadUsers("USERS.TXT");
+    userCount = 0;
+    while (loadUsers >> users[userCount].username)
+    {
+        loadUsers >> users[userCount].password;
+        loadUsers >> users[userCount].isAdmin;
+        loadUsers >> users[userCount].banned;
+        userCount++;
+    }
+    loadUsers.close();
+}
+
+void saveUsers()
+{
+    ofstream saveUsers("USERS.TXT");
+    for (i = 0; i < userCount; i++)
+    {
+        saveUsers << users[i].username << " " << users[i].password << " " << users[i].isAdmin << " " << users[i].banned << "\n";
+    }
+    saveUsers.close();
+}
+
+// displays
+
+void displayMainMenu()
+{
+    clrscr();
+    cout << "Main Menu\n";
+    cout << "1. Admin Login\n";
+    cout << "2. User Login\n";
+    cout << "3. Register\n";
+    cout << "4. Exit\n";
+    cout << "Enter Choice: \n";
+}
+
+void displayAdminMenu()
+{
+    clrscr();
+    cout << "Admin Menu\n";
+    cout << "1. Add and Edit Words\n";
+    cout << "2. Categorize Words\n";
+    cout << "3. Approval Queue\n";
+    cout << "4. Feedback Management\n";
+    cout << "5. Manage Users\n";
+    cout << "6. Backup Data\n";
+    cout << "7. Restore Data\n";
+    cout << "8. Logout\n";
+    cout << "9. Exit Program\n";
+    cout << "Enter Choice: \n";
+}
+
+void displayUserMenu()
+{
+    clrscr();
+    cout << "User Menu\n";
+    cout << "1. Search for Gen Z Words\n";
+    cout << "2. Dictionary\n";
+    cout << "3. Logout\n";
+    cout << "4. Exit Program\n";
+    cout << "Enter Choice: \n";
+}
+
+void displayDict(int page, int perPage, int category = 4)
+{
+
+    int start;
+    int pages;
+    int end;
+
+    clrscr();
+    start = perPage * page;
+    pages = (wordCount / perPage) + 1;
+    end = start + perPage;
+    end > wordCount ? end = wordCount : end = end;
+    cout << "Page: " << page + 1 << "/" << pages << endl;
+    cout << "###########################################################################" << endl;
+    cout << setw(3) << "id" << setw(15) << "Word" << setw(15) << "GenZ" << setw(15) << "Acronym" << endl;
+    for (start; start < end; start++)
+    {
+        if (entries[start].approved)
+        {
+            switch (category)
+            {
+            case 1:
+		if (strcmp(entries[start].acronym, " ") == 0)
+                    cout << setw(3) << start + 1 << setw(15) << entries[start].word << setw(15) << entries[start].changedWord << endl;
+                break;
+            case 2:
+                if (strcmp(entries[start].changedWord, " ") == 0)
+                    cout << setw(3) << start + 1 << setw(15) << entries[start].word << setw(15) << entries[start].acronym << endl;
+                break;
+            case 3:
+                if (strcmp(entries[start].acronym, " ") != 0 && strcmp(entries[start].changedWord, " ") != 0)
+                    cout << setw(3) << start + 1 << setw(15) << entries[start].word << setw(15) << entries[start].changedWord << setw(15) << entries[start].acronym << endl;
+                break;
+            default:
+                cout << setw(3) << start + 1 << setw(15) << entries[start].word << setw(15) << entries[start].changedWord << setw(15) << entries[start].acronym << endl;
+                break;
+            }
+        }
+    }
+    cout << "###########################################################################" << endl;
+}
+
+void dict()
+{
+    int page = 0;
+    int perPage = 10;
+    int cat;
+    do
+    {
+        displayDict(page, perPage, cat);
+        cout << "1.Previous" << endl;
+        cout << "2.Next" << endl;
+        cout << "3.Definition" << endl;
+        cout << "4.Add Word" << endl;
+        cout << "5.Per Page" << endl;
+        cout << "6.Category" << endl;
+        cout << "7.Exit" << endl;
+        cout << ": ";
+
+        cin >> choice;
+        switch (choice)
+        {
+        case 1:
+            if (page > 0)
+                page--; // Move to previous page
+            break;
+        case 2:
+            if (page < ((wordCount / perPage) + 1) - 1)
+                page++; // Move to next page
+            break;
+        case 3:
+            cout << "Input Id to Get Definition of the word" << endl;
+            cin >> choice;
+            clrscr();
+            cout << setw(10) << "Word" << "\tDefinition" << endl;
+            cout << setw(10) << entries[choice - 1].word << "\t" << entries[choice - 1].definition << endl;
+            getch();
+            break;
+        case 4:
+            clrscr();
+            if (wordCount >= max_words)
+            {
+                cout << "Database is full.\n";
+                return;
+            }
+            cout << "Choose Category\n";
+            cout << "1.Changed Words" << endl;
+            cout << "2.Acronym" << endl;
+            cout << "3.Both" << endl;
+            cin >> choice;
+
+            WordEntry newEntry;
+            cout << "Enter word: ";
+            cin >> newEntry.word;
+            cout << "Enter definition: ";
+            cin.ignore();
+            cin.getline(newEntry.definition, max_length);
+            switch (choice)
+            {
+            case 1:
+                cout << "Enter the changed word: ";
+                cin.getline(newEntry.changedWord, max_length);
+                strcpy(newEntry.acronym, " ");
+                break;
+            case 2:
+                strcpy(newEntry.changedWord, " ");
+                cout << "Enter the acronym: ";
+                cin.getline(newEntry.acronym, max_length);
+                break;
+            case 3:
+                cout << "Enter the changed word: ";
+                cin.getline(newEntry.changedWord, max_length);
+                cout << "Enter the acronym: ";
+                cin.getline(newEntry.acronym, max_length);
+                break;
+            }
+            newEntry.approved = 0;
+            entries[wordCount++] = newEntry;
+            cout << "Word added to approval queue.\n";
+            getch();
+            break;
+        case 5:
+            cout << "Input Per Page" << endl;
+            cin >> perPage;
+            break;
+        case 6:
+            cat = categorize();
+            break;
+        }
+
+    } while (choice != 7);
+}
+// menus
+// complete
+void mainMenu()
+{
+    clrscr();
+    int continueLoop = 1;
+    while (continueLoop == 1)
+    {
+        displayMainMenu();
+        cin >> choice;
+        switch (choice)
+        {
+        case 1:
+            adminLogin();
+            break;
+        case 2:
+            userLogin();
+            break;
+        case 3:
+            registerUser();
+            break;
+        case 4:
+            backup();
+            exit(0);
+        default:
+            cout << "Invalid choice.\n";
+            getch();
+            break;
+        }
+    }
+}
+// incomplete
+void adminMenu()
+{
+    clrscr();
+    int continueLoop = 1;
+    while (continueLoop == 1)
+    {
+        displayAdminMenu();
+        cin >> choice;
+        switch (choice)
+        {
+        case 1:
+            addAndEdit();
+            break;
+        case 2:
+            categorize();
+            break;
+        case 3:
+            approval();
+            break;
+        case 4:
+            feedback();
+            break;
+        case 5:
+            manageUsers();
+            break;
+        case 6:
+            clrscr();
+            backup();
+            cout << "Backup Success";
+            getch();
+            break;
+        case 7:
+            clrscr();
+            restore();
+            cout << "Restore Success";
+            getch();
+            break;
+        case 8:
+            mainMenu();
+            break;
+        case 9:
+            backup();
+            exit(0);
+        default:
+            cout << "Invalid choice.\n";
+            getch();
+            break;
+        }
+    }
+}
+// incomplete
+void userMenu()
+{
+    clrscr();
+    int continueLoop = 1;
+    while (continueLoop == 1)
+    {
+        displayUserMenu();
+        cin >> choice;
+        switch (choice)
+        {
+        case 1:
+            cout << "searchWords();" << "\n";
+            break;
+        case 2:
+            dict();
+            break;
+        case 3:
+            return;
+        case 4:
+            backup();
+            exit(0);
+        default:
+            cout << "Invalid choice.\n";
+            break;
+        }
+    }
+    getch();
+}
+// login functions
+// complete
+void adminLogin()
+{
+    clrscr();
+    char username[max_length], password[max_length];
+    cout << "Username: ";
+    cin >> username;
+    cout << "Password: ";
+    cin >> password;
+
+    for (i = 0; i < userCount; i++)
+    {
+        if (strcmp(users[i].username, username) == 0 && strcmp(users[i].password, password) == 0 && users[i].isAdmin && !users[i].banned)
+        {
+            adminMenu();
+            return;
+        }
+    }
+    cout << "Invalid login credentials or not an admin.\n";
+    getch();
+    mainMenu();
+}
+// complete
+void userLogin()
+{
+    clrscr();
+    char username[max_length], password[max_length];
+    cout << "Username: ";
+    cin >> username;
+    cout << "Password: ";
+    cin >> password;
+
+    for (int i = 0; i < userCount; i++)
+    {
+        if (strcmp(users[i].username, username) == 0 && strcmp(users[i].password, password) == 0 && !users[i].banned)
+        {
+            userMenu();
+            return;
+        }
+    }
+    cout << "Invalid login credentials.\n";
+    getch();
+    mainMenu();
+}
+// complete
+void registerUser()
+{
+    clrscr();
+    if (userCount >= max_users)
+    {
+        cout << "Maximum number of users reached.\n";
+        return;
+    }
+    char newUsername[max_length], newPassword[max_length];
+    int usernameExists = 0; // Simulate boolean with int
+
+    cout << "Enter new username: ";
+    cin >> newUsername;
+    cin.ignore(256, '\n'); // Clear input buffer
+
+    for (int userIndex = 0; userIndex < userCount; userIndex++)
+    {
+        if (strcmp(users[userIndex].username, newUsername) == 0)
+        {
+            usernameExists = 1; // Set to true
+            break;
+        }
+    }
+
+    if (usernameExists)
+    {
+        cout << "Username already exists.\n";
+        getch();
+        return;
+    }
+
+    cout << "Enter new password: ";
+    cin >> newPassword;
+    cin.ignore(256, '\n');
+
+    strcpy(users[userCount].username, newUsername);
+    strcpy(users[userCount].password, newPassword);
+    users[userCount].isAdmin = 0; // Regular user account
+    users[userCount].banned = 0;
+    userCount++;
+    cout << "Registration successful.\n";
+    getch();
+}
+// admin functions
+// complete
+void addAndEdit()
+{
+    clrscr();
+    int page = 0;
+    int perPage = 10;
+    int cat;
+    do
+    {
+        displayDict(page, perPage, cat);
+        cout << "1.Previous" << endl;
+        cout << "2.Next" << endl;
+        cout << "3.Per Page" << endl;
+        cout << "4.Add Word" << endl;
+        cout << "5.Edit Word" << endl;
+        cout << "6.Category" << endl;
+        cout << "7.Exit" << endl;
+        cout << ": ";
+        cin >> choice;
+        switch (choice)
+        {
+        case 1:
+            if (page > 0)
+                page--; // Move to previous page
+            break;
+        case 2:
+            if (page < ((wordCount / perPage) + 1) - 1)
+                page++; // Move to next page
+            break;
+        case 3:
+            cout << "Input Per Page" << endl;
+            cin >> perPage;
+            break;
+        case 4:
+            clrscr();
+            if (wordCount >= max_words)
+            {
+                cout << "Database is full.\n";
+                return;
+            }
+            cout << "Choose Category\n";
+            cout << "1.Changed Words" << endl;
+            cout << "2.Acronym" << endl;
+            cout << "3.Both" << endl;
+            cin >> choice;
+
+            WordEntry newEntry;
+            cout << "Enter word: ";
+            cin >> newEntry.word;
+            cout << "Enter definition: ";
+            cin.ignore();
+            cin.getline(newEntry.definition, max_length);
+            switch (choice)
+            {
+            case 1:
+                cout << "Enter the changed word: ";
+                cin.getline(newEntry.changedWord, max_length);
+                strcpy(newEntry.acronym, " ");
+                break;
+            case 2:
+                strcpy(newEntry.changedWord, " ");
+                cout << "Enter the acronym: ";
+                cin.getline(newEntry.acronym, max_length);
+                break;
+            case 3:
+                cout << "Enter the changed word: ";
+                cin.getline(newEntry.changedWord, max_length);
+                cout << "Enter the acronym: ";
+                cin.getline(newEntry.acronym, max_length);
+                break;
+            }
+
+            newEntry.approved = 1;
+            entries[wordCount++] = newEntry;
+            cout << "Word added to approval queue.\n";
+            getch();
+            break;
+        case 5:
+            char wordToEdit[max_length];
+            cout << "Enter word to edit: ";
+            cin >> wordToEdit;
+            cin.ignore();
+
+            for (int index = 0; index < wordCount; index++)
+            {
+                if (strcmp(entries[index].word, wordToEdit) == 0)
+                {
+                    clrscr();
+                    cout << "Enter new definition: ";
+                    cin.getline(entries[index].definition, max_length);
+                    cout << "Enter the new changed word: ";
+                    cin.getline(entries[index].changedWord, max_length);
+                    cout << "Enter the new acronym: ";
+                    cin.getline(entries[index].acronym, max_length);
+                    cout << "Entry updated.\n";
+                    getch();
+                    return;
+                }
+            }
+            cout << "Word not found.\n";
+            getch();
+            break;
+
+        case 6:
+            cat = categorize();
+            break;
+        }
+    } while (choice != 7);
+    adminMenu();
+}
+
+// aayusin pa
+int categorize()
+{
+    int opt;
+    clrscr();
+    cout << "Categories:\n";
+    cout << "1.GenZ Word" << endl;
+    cout << "2.Acronym" << endl;
+    cout << "3.Both" << endl;
+    cout << ": ";
+    cin >> opt;
+    return opt;
+}
+
+void approval()
+{
+    clrscr();
+    cout << "Words awaiting approval:\n";
+    for (int i = 0; i < wordCount; i++)
+    {
+        if (!entries[i].approved)
+        {
+            cout << i << ". " << entries[i].word << " - " << entries[i].definition << " - " << entries[i].changedWord << " - " << entries[i].acronym << "\n";
+        }
+    }
+
+    int index;
+    cout << "Enter the index of the word to approve or reject (-1 to go back): ";
+    cin >> index;
+    index;
+    if (index == -1)
+    {
+        return;
+    }
+    if (index < 0 || index >= wordCount)
+    {
+        cout << "Invalid index.\n";
+        getch();
+        return;
+    }
+
+    cout << "Approve (1) or Reject (2): ";
+    cin >> choice;
+
+    if (choice == 1)
+    {
+        entries[index].approved = 1;
+        cout << "Word approved.\n";
+    }
+    else if (choice == 2)
+    {
+        // Option to remove the word from the database
+        // This is a simplistic approach; consider implementing a more sophisticated removal strategy
+        for (int i = index; i < wordCount - 1; ++i)
+        {
+            entries[i] = entries[i + 1];
+        }
+        wordCount--;
+        cout << "Word rejected.\n";
+    }
+    else
+    {
+        cout << "Invalid choice.\n";
+    }
+    getch();
+    approval();
+}
+// incomplete need user to create feedback
+void feedback()
+{ // OK NA NAGANA NA BOI
+    clrscr();
+    ifstream feedbackFile("feedback.txt");
+    if (!feedbackFile)
+    {
+        cout << "No feedback available.\n";
+        getch();
+        return;
+    }
+
+    char line[100];
+    while (feedbackFile.getline(line, 100))
+    {
+        cout << line << "\n";
+        cout << "Press any key to back to admin menu.";
+        getch();
+        adminMenu();
+    }
+    feedbackFile.close();
+    getch();
+}
+// complete??
+void manageUsers()
+{
+    clrscr();
+    cout << "User Accounts:\n";
+    cout << setw(15) << "Username" << setw(10) << "Position" << setw(10) << "Status" << endl;
+    for (i = 0; i < userCount; ++i)
+    {
+        cout << i << setw(14) << users[i].username;
+        users[i].isAdmin ? cout << setw(10) << "Admin" : cout << setw(10) << "User";
+        users[i].banned ? cout << setw(10) << "Banned" : cout << setw(10) << "";
+        cout << "\n";
+    }
+    getch();
+
+    cout << "Promote (1), Demote (2), or Ban/Unbanned (3) user (or enter '4' to cancel): ";
+    cin >> choice;
+
+    if (choice == 4)
+    {
+        cout << "Operation canceled.\n";
+        return;
+    }
+
+    int index;
+    cout << "Enter the index of the user: ";
+    cin >> index;
+
+    if (index < 0 || index >= userCount)
+    {
+        cout << "Invalid user index.\n";
+        return;
+    }
+
+    switch (choice)
+    {
+    case 1:
+        users[index].isAdmin = 1;
+        cout << "User promoted.\n";
+        break;
+    case 2:
+        users[index].isAdmin = 0;
+        cout << "User demoted.\n";
+        break;
+    case 3:
+        users[index].banned = !users[index].banned;
+        users[index].banned ? cout << "User banned.\n" : cout << "User Unbanned.";
+        break;
+    default:
+        cout << "Invalid choice.\n";
+        break;
+    }
+    getch();
+}
+// complete
+void backup()
+{
+
+    saveDatabase();
+    saveUsers();
+}
+// complete
+void restore()
+{
+
+    loadDatabase();
+    loadUsers();
+}
