@@ -80,6 +80,8 @@ void restore();
 
 void search_entries();
 
+void title();
+
 // global variables
 int choice = 0, i = 0;
 
