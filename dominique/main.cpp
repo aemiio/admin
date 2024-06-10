@@ -87,8 +87,7 @@ int choice = 0, i = 0;
 void main() {
     clrscr();
     restore();
-    mainMenu();
-    getch();
+    title();
 }
 
 // DATABASE
