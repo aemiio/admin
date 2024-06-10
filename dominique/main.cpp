@@ -363,6 +363,16 @@ void dict() {
     } while (choice != 7);
 }
 
+void title() {
+    clrscr();
+    cout << " " << endl;
+    cout << "GEN Z LINGO VAULT" << endl;
+    cout << " " << endl;
+    cout << "Press any key to continue... " << endl;
+    getch();
+    mainMenu();
+}
+
 // MENU
 void mainMenu() {
     clrscr();
