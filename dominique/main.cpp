@@ -244,10 +244,10 @@ void displayDict(int page, int perPage, int category = 4) {
     int end;
 
     clrscr();
-    start = perPage * page;
-    pages = (wordCount / perPage) + 1;
-    end = start + perPage;
-    end > wordCount ? end = wordCount : end = end;
+    start = perPage * page; //determine where to start
+    pages = (wordCount / perPage) + 1; //total number of pages needed to display (+1 para sa remaining entries)
+    end = start + perPage; //index of last entry
+    end > wordCount ? end = wordCount : end = end; // limit range
     cout << "Page: " << page + 1 << "/" << pages << endl;
     cout << "###########################################################################" << endl;
     cout << setw(3) << "id" << setw(15) << "Word" << setw(15) << "GenZ" << setw(15) << "Acronym" << endl;
