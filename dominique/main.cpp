@@ -301,6 +301,10 @@ void dict() {
                     page--; // Move to previous page
                 break;
             case 2:
+                //wordcount/perpage: total number of pages
+                //wordcount/perpage + 1: add one page
+                //wordcount/perpage +1 - 1: index of last page
+                //check if page is less than index of last page
                 if (page < ((wordCount / perPage) + 1) - 1)
                     page++; // Move to next page
                 break;
