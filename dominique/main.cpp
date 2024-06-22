@@ -12,14 +12,6 @@ const int MAX_LENGTH = 100;
 const int MAX_USERS = 20;
 const int MAX_ENTRIES = 100;
 
-// struct Feedback {
-//     char content[MAX_LENGTH];
-//     char username[MAX_LENGTH];
-
-// };
-// Feedback feedbacks[100]; 
-// int feedbackCount = 0;
-
 // STRUCTS
 struct WordEntry {
     char word[MAX_LENGTH];
@@ -69,9 +61,6 @@ int categorize();
 
 void approval();
 
-// void writeFeedback();
-// void readFeedback();
-// void deleteFeedback(int);
 void manageUsers();
 
 void backup();
@@ -160,48 +149,8 @@ void saveUsers() {
     }
     saveUsers.close();
 }
-// void saveFeedback() {
-//     ofstream outFile("feedback.txt");
-//     if (!outFile) {
-//         cout << "Unable to open file for writing.\n";
-//         return;
-//     }
-
-//     for (int i = 0; i < feedbackCount; i++) {
-//         outFile << feedbacks[i].username << ":" << feedbacks[i].content << "\n";
-//     }
-
-//     outFile.close();
-// }
-
-// void loadFeedback() {
-//     ifstream inFile("feedback.txt");
-//     if (!inFile) {
-//         cout << "Unable to open file for reading.\n";
-//         return;
-//     }
-
-//     feedbackCount = 0; // Reset feedback count
-//     char line[200]; // Buffer to hold each line
-//     while (inFile.getline(line, sizeof(line)) &&!inFile.eof()) {
-//         char* token = strtok(line, ":"); // Tokenize the line by colon
-//         if (token!= NULL) {
-//             strcpy(feedbacks[feedbackCount].username, token);
-//         }
-
-//         token = strtok(NULL, ":"); // Get the next token
-//         if (token!= NULL) {
-//             strcpy(feedbacks[feedbackCount].content, token);
-//         }
-
-//         feedbackCount++;
-//     }
-
-//     inFile.close();
-// }
 
 
-//
 void displayMainMenu() {
     clrscr();
     cout << "Main Menu\n";
@@ -217,7 +166,6 @@ void displayAdminMenu() {
     cout << "Admin Menu\n";
     cout << "1. Dictionary\n";
     cout << "2. Approval Queue\n";
-    // cout << "3. Feedback Management\n";
     cout << "3. Manage Users\n";
     cout << "4. Backup Data\n";
     cout << "5. Restore Data\n";
@@ -231,7 +179,6 @@ void displayUserMenu() {
     cout << "User Menu\n";
     cout << "1. Search for Gen Z entries\n";
     cout << "2. Dictionary\n";
-    // cout << "3.Write Feedback\n";
     cout << "3. Logout\n";
     cout << "4. Exit Program\n";
     cout << "Enter Choice: \n";
@@ -407,7 +354,6 @@ void mainMenu() {
     }
 }
 
-// incomplete
 void adminMenu() {
     clrscr();
     int continueLoop = 1;
@@ -421,9 +367,6 @@ void adminMenu() {
             case 2:
                 approval();
                 break;
-                // case 3:
-                //     readFeedback();
-                //     break;
             case 3:
                 manageUsers();
                 break;
@@ -453,7 +396,7 @@ void adminMenu() {
     }
 }
 
-// incomplete
+
 void userMenu() {
     clrscr();
     int continueLoop = 1;
@@ -467,9 +410,6 @@ void userMenu() {
             case 2:
                 dict();
                 break;
-                // case 3:
-                //     writeFeedback();
-                //     break;
             case 3:
                 return;
             case 4:
@@ -721,43 +661,8 @@ void approval() {
     getch();
     approval();
 }
-// incomplete need user to create feedback
-// void writeFeedback() {
-//     if (feedbackCount >= 100) {
-//         cout << "Feedback array is full. Cannot accept more feedback.\n";
-//         return;
-//     }
 
-//     cout << "Enter feedback content: ";
-//     cin.getline(feedbacks[feedbackCount].content, MAX_LENGTH);
 
-//     cout << "Enter your username: ";
-//     cin.getline(feedbacks[feedbackCount].username, MAX_LENGTH);
-
-//     feedbackCount++; // Increment the count of feedback entries
-//     cout << "Feedback successfully submitted.\n";
-// }
-// void readFeedback() {
-//     int ind;
-//     for (int i = 0; i < feedbackCount; i++) {
-//         cout << i<<". Feedback from " << feedbacks[i].username << ": " << feedbacks[i].content << endl;
-//     }
-//     cout << "Choose index to delete: " ;
-//     cin>>ind;
-//     deleteFeedback(ind);
-//     getch();
-// }
-// void deleteFeedback(int index) {
-//     if (index < 0 && index < feedbackCount) {
-//         for (int i = index; i < feedbackCount - 1; i++) {
-//             feedbacks[i] = feedbacks[i + 1];
-//         }
-//         feedbackCount--;
-//     } else {
-//         cout << "Invalid index.\n";
-//     }
-// }
-// complete??
 void manageUsers() {
     clrscr();
     cout << "User Accounts:\n";
@@ -809,13 +714,11 @@ void manageUsers() {
 
 
 void backup() {
-    // saveFeedback();
     saveDatabase();
     saveUsers();
 }
 
 void restore() {
-    // loadFeedback();
     loadDatabase();
     loadUsers();
 }
